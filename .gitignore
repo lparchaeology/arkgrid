@@ -1,0 +1,5 @@
+.DS_Store
+.kdev4
+/build/node_modules
+/build/vendor
+/vendor/

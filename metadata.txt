@@ -1,0 +1,38 @@
+# This file contains metadata for your plugin. Since 
+# version 2.0 of QGIS this is the proper way to supply 
+# information about a plugin. The old method of 
+# embedding metadata in __init__.py will 
+# is no longer supported since version 2.0.
+
+# This file should be included when you package your plugin.# Mandatory items:
+
+[general]
+name=ARK Grid
+qgisMinimumVersion=2.08
+description=A QGIS plugin to to create and work with local site grids as commonly used in archaeology.
+version=0.1
+author=L ~ P : Archeaology
+email=ark@lparchaeology.com
+
+about=<i>ARK Grid</i> is a QGIS Plugin to create and work with local site grids as commonly used in archaeology. <br/><br/>A grid wizard allows you to create grids from two known points, or from a known origin and baseline. Interactive tools are provided to convert between local coordinates and map coordinates. <br/><br/><i>ARK Grid</i> is developed as part of ARK, the <a href='http://ark.lparchaeology.com'>Archaeological Recording Kit</a>, by <a href='http://www.lparchaeology.com'>L ~ P : Archaeology</a>.
+
+tracker=https://github.com/lparchaeology/ArkGrid/issues
+repository=https://github.com/lparchaeology/ArkGrid
+# End of mandatory metadata
+
+# Recommended items:
+
+# Uncomment the following line and add your changelog:
+# changelog=
+
+# Tags are comma separated with spaces allowed
+tags=geometry, vector, grid, archaeology, site
+
+homepage=https://github.com/lparchaeology/ArkGrid
+category=Vector
+icon=icon.png
+# experimental flag
+experimental=False
+
+# deprecated flag (applies to the whole plugin, not just a single version)
+deprecated=False

@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>SettingsWizard</class>
+ <widget class="QWizard" name="SettingsWizard">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>668</width>
+    <height>358</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Wizard</string>
+  </property>
+  <property name="options">
+   <set>QWizard::CancelButtonOnLeft|QWizard::NoBackButtonOnStartPage|QWizard::NoDefaultButton</set>
+  </property>
+  <widget class="QWizardPage" name="welcomePage">
+   <property name="title">
+    <string>ARK Grid Settings Wizard</string>
+   </property>
+   <property name="subTitle">
+    <string>This wizard will walk you through setting up ARK Grid.</string>
+   </property>
+   <attribute name="pageId">
+    <string notr="true">welcomePage</string>
+   </attribute>
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="0" column="0">
+     <widget class="QLabel" name="label">
+      <property name="text">
+       <string>This wizard will save your settings in your project file, you must save your project otherwise this wizard will be run again. Once saved you can edit your settings by running the wizard manually.</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignJustify|Qt::AlignVCenter</set>
+      </property>
+      <property name="wordWrap">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWizardPage" name="folderPage">
+   <property name="title">
+    <string>Project Folder</string>
+   </property>
+   <property name="subTitle">
+    <string>Please choose your Project Folder.</string>
+   </property>
+   <attribute name="pageId">
+    <string notr="true">folderPage</string>
+   </attribute>
+   <layout class="QGridLayout" name="gridLayout_2">
+    <item row="0" column="0">
+     <widget class="QLabel" name="folderLabel">
+      <property name="text">
+       <string>This will default to your current project folder if it exists. The chosen folder will be created if it does not already exist. ARK Grid wil store the shapefiles it needs in the project folder under 'vector/grid'.
+</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignJustify|Qt::AlignVCenter</set>
+      </property>
+      <property name="wordWrap">
+       <bool>true</bool>
+      </property>
+      <property name="buddy">
+       <cstring>projectFolderEdit</cstring>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0">
+     <layout class="QHBoxLayout" name="projectFolderLayout">
+      <item>
+       <widget class="QLineEdit" name="projectFolderEdit"/>
+      </item>
+      <item>
+       <widget class="QToolButton" name="projectFolderButton">
+        <property name="icon">
+         <iconset>
+          <normaloff>:/plugins/ark/folder.png</normaloff>:/plugins/ark/folder.png</iconset>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWizardPage" name="confirmPage">
+   <property name="title">
+    <string>Select Files</string>
+   </property>
+   <property name="subTitle">
+    <string>Select the grid file names to use.</string>
+   </property>
+   <attribute name="pageId">
+    <string notr="true">confirmPage</string>
+   </attribute>
+   <layout class="QGridLayout" name="gridLayout_3">
+    <item row="9" column="1">
+     <spacer name="verticalSpacer">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>20</width>
+        <height>10</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item row="4" column="0">
+     <widget class="QLabel" name="gridPointNameLabel">
+      <property name="text">
+       <string>Points File Name:</string>
+      </property>
+      <property name="buddy">
+       <cstring>gridPointsNameEdit</cstring>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="0" colspan="2">
+     <widget class="QLabel" name="confirmLabel">
+      <property name="text">
+       <string>Click on the Done button to create your files. All required folders and files will be created. No existing data files will be overwritten. You must specify a Points File Name, but if you leave the Lines or Polygons field empty that file will not be created.
+</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignJustify|Qt::AlignVCenter</set>
+      </property>
+      <property name="wordWrap">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="1">
+     <widget class="QLineEdit" name="gridPointsNameEdit"/>
+    </item>
+    <item row="8" column="1">
+     <widget class="QLineEdit" name="gridPolygonsNameEdit">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="0">
+     <widget class="QLabel" name="gridGroupNameLabel">
+      <property name="text">
+       <string>Group Name:</string>
+      </property>
+      <property name="buddy">
+       <cstring>gridGroupNameEdit</cstring>
+      </property>
+     </widget>
+    </item>
+    <item row="6" column="0">
+     <widget class="QLabel" name="gridLinesNameLabel">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="text">
+       <string>Lines File Name:</string>
+      </property>
+      <property name="buddy">
+       <cstring>gridLinesNameEdit</cstring>
+      </property>
+     </widget>
+    </item>
+    <item row="8" column="0">
+     <widget class="QLabel" name="gridPolygonsNameLabel">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="text">
+       <string>Polygons File Name:</string>
+      </property>
+      <property name="buddy">
+       <cstring>gridPolygonsNameEdit</cstring>
+      </property>
+     </widget>
+    </item>
+    <item row="6" column="1">
+     <widget class="QLineEdit" name="gridLinesNameEdit">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="1">
+     <widget class="QLineEdit" name="gridGroupNameEdit"/>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
+ <connections/>
+</ui>
