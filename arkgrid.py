@@ -37,6 +37,7 @@ from libarkqgis.geometry import LinearTransformer
 from libarkqgis.map_tools import ArkMapToolEmitPoint
 
 from translate_features_dialog import TranslateFeaturesDialog
+from select_layer_dialog import SelectLayerDialog
 from update_layer_dialog import UpdateLayerDialog
 from settings_wizard import SettingsWizard
 from grid_wizard import GridWizard
@@ -79,6 +80,7 @@ class ArkGrid(Plugin):
         self._pasteMapPointAction = self.dock.toolbar.addAction(QIcon(':/plugins/ark/grid/pastePoint.png'), self.tr(u'Paste Map Point'), self.pasteMapPointFromClipboard)
         self._addMapPointAction = self.dock.toolbar.addAction(QIcon(':/plugins/ark/grid/addPoint.png'), self.tr(u'Add point to current layer'), self.addMapPointToLayer)
         self._updateLayerAction = self.dock.toolbar.addAction(QIcon(':/plugins/ark/grid/updateLayer.png'), self.tr(u'Update Layer Coordinates'), self.showUpdateLayerDialog)
+        self._importDelimitedAction = self.dock.toolbar.addAction(QIcon(':/plugins/ark/grid/updateLayer.png'), self.tr(u'Import Delimited Text File'), self.showDelimitedTextDialog)
         #self._translateFeaturesAction = self.dock.toolbar.addAction(QIcon(':/plugins/ark/grid/translateFeature.png'), self.tr(u'Translate features'), self.showTranslateFeaturesDialog)
         self._settingsWizardAction = self.dock.toolbar.addAction(QIcon(':/plugins/ark/grid/settings.svg'), self.tr(u'Run Settings Wizard'), self.configure)
 
@@ -97,12 +99,21 @@ class ArkGrid(Plugin):
         self._vertexMarker = QgsVertexMarker(self.mapCanvas())
         self._vertexMarker.setIconType(QgsVertexMarker.ICON_CROSS)
 
+        # If the project changes make sure we stay updated
+        self.iface.projectRead.connect(self.loadProject)
+        self.iface.newProjectCreated.connect(self.closeProject)
+
     def loadProject(self):
         # Check if files exist or need creating
         # Run create if needed
 
-        self.grid = self._loadCollection('grid', self.projectPath());
+        if self._initialised:
+            self.closeProject();
+
+        if self.projectPath():
+            self.grid = self._loadCollection('grid', self.projectPath());
         if self.grid is None or self.grid.settings is None or self.grid.settings.pointsLayerPath == '':
+            self.grid = None;
             return
         self.grid.initialise()
 
@@ -118,10 +129,14 @@ class ArkGrid(Plugin):
 
     # Close the project
     def closeProject(self):
-        self._vertexMarker.setCenter(QgsPoint())
+        if self._vertexMarker:
+            self._vertexMarker.setCenter(QgsPoint())
         if self.grid is not None:
             self.grid.clearFilter()
             self.grid.unload()
+            self.grid = None
+        self.dock.widget.closeProject()
+        self._setReadOnly(True)
         self._initialised = False
 
     # Unload the module when plugin is unloaded
@@ -206,7 +221,7 @@ class ArkGrid(Plugin):
         if self.grid and self.grid.settings:
             lcs = self.grid.settings
         else:
-            lcs = LayerCollectionSettings.fromProject(self.pluginName, collection)
+            lcs = LayerCollectionSettings.fromProject(self.pluginName, 'grid')
         if lcs:
             config['collectionGroupName'] = lcs.collectionGroupName
             config['pointsLayerName'] = lcs.pointsLayerName
@@ -538,8 +553,6 @@ class ArkGrid(Plugin):
         layers.addFeatures(features, layer)
 
     def _triggerMapTool(self):
-        if not self._initialised:
-            self.initialise()
         if self._initialised:
             if self._identifyGridAction.isChecked():
                 self.mapCanvas().setMapTool(self._mapTool)
@@ -570,36 +583,34 @@ class ArkGrid(Plugin):
         self.setMapPoint(mapPoint)
 
     def showUpdateLayerDialog(self):
-        if not self._initialised:
-            self.initialise()
         if self._initialised:
             dialog = UpdateLayerDialog(self.iface)
             if dialog.exec_():
                 self.updateLayerCoordinates(dialog.layer(), dialog.updateGeometry(), dialog.createMapFields())
 
+    def _addField(self, layer, field):
+        if layer.fieldNameIndex(Config.fieldName(field)) < 0:
+            layer.dataProvider().addAttributes([Config.field(field)])
+
+    def _addLocalMapFields(self, layer, createMapFields):
+        self._addField(layer, 'local_x')
+        self._addField(layer, 'local_y')
+        if (createMapFields):
+            self._addField(layer, 'map_x')
+            self._addField(layer, 'map_y')
+
     def updateLayerCoordinates(self, layer, updateGeometry, createMapFields):
         if (not self._initialised or layer is None or not layer.isValid() or layer.geometryType() != QGis.Point):
             return False
-        local_x = Config.fieldName('local_x')
-        local_y = Config.fieldName('local_y')
-        map_x = Config.fieldName('map_x')
-        map_y = Config.fieldName('map_y')
+        self._addLocalMapFields(layer, createMapFields)
         if layer.startEditing():
-            if layer.fieldNameIndex(local_x) < 0:
-                layer.dataProvider().addAttributes([self.field('local_x')])
-            if layer.fieldNameIndex(local_y) < 0:
-                layer.dataProvider().addAttributes([self.field('local_y')])
-            if (createMapFields and layer.fieldNameIndex(map_x) < 0):
-                layer.dataProvider().addAttributes([self.field('map_x')])
-            if (createMapFields and layer.fieldNameIndex(map_y) < 0):
-                layer.dataProvider().addAttributes([self.field('map_y')])
-            local_x_idx = layer.fieldNameIndex(local_x)
-            local_y_idx = layer.fieldNameIndex(local_y)
-            map_x_idx = layer.fieldNameIndex(map_x)
-            map_y_idx = layer.fieldNameIndex(map_y)
+            local_x_idx = layer.fieldNameIndex(Config.fieldName('local_x'))
+            local_y_idx = layer.fieldNameIndex(Config.fieldName('local_y'))
+            map_x_idx = layer.fieldNameIndex(Config.fieldName('map_x'))
+            map_y_idx = layer.fieldNameIndex(Config.fieldName('map_y'))
             if updateGeometry:
                 for feature in layer.getFeatures():
-                    localPoint = QgsPoint(feature.attribute(local_x), feature.attribute(local_y))
+                    localPoint = QgsPoint(feature.attribute(Config.fieldName('local_x')), feature.attribute(Config.fieldName('local_y')))
                     mapPoint = self._localTransformer.map(localPoint)
                     layer.changeGeometry(feature.id(), QgsGeometry.fromPoint(mapPoint))
             for feature in layer.getFeatures():
@@ -613,8 +624,6 @@ class ArkGrid(Plugin):
         return False
 
     def showTranslateFeaturesDialog(self):
-        if not self._initialised:
-            self.initialise()
         if self._initialised:
             dialog = TranslateFeaturesDialog(self.iface)
             if dialog.exec_():
@@ -709,3 +718,36 @@ class ArkGrid(Plugin):
     def localPointAsWkt(self):
         # Return the text so we don't have insignificant double values
         return 'POINT(' + self.dock.widget.localEastingSpin.text() + ' ' + self.dock.widget.localNorthingSpin.text() + ')'
+
+    def showDelimitedTextDialog(self):
+        # HACK to access private dialog!!!
+        dialog = QgsProviderRegistry.instance().selectWidget("delimitedtext", self.iface.mainWindow())
+        dialog.addVectorLayer.connect(self.loadDelimitedText)
+        dialog.show()
+
+    def loadDelimitedText(self, url, layerName, provider):
+        #unload the layer
+
+        inLayer = QgsVectorLayer(url, 'temp', provider)
+        if (inLayer is None or not inLayer.isValid()):
+            return
+
+        dialog = SelectLayerDialog(self.iface)
+        toLayer = None
+        if dialog.exec_():
+            if dialog.currentLayer():
+                toLayer = self.mapCanvas().currentLayer()
+            elif dialog.selectedLayer():
+                toLayer = dialog.layer()
+            elif dialog.newLayer():
+                fields = inLayer.pendingFields()
+                toLayer = layers.createMemoryLayer(layerName, QGis.WKBPoint, self.projectCrs(), fields)
+                layers.addLayerToLegend(self.iface, toLayer)
+
+        if toLayer and toLayer.geometryType() == QGis.Point:
+            self._addLocalMapFields(toLayer, False)
+            if toLayer.startEditing():
+                for feature in inLayer.getFeatures():
+                    toLayer.addFeature(feature)
+
+        self.mapCanvas().refresh()

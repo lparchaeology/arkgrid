@@ -104,6 +104,20 @@ class GridWidget(QWidget, grid_widget_base.Ui_GridWidget):
         if data:
             self.gridSelectionChanged.emit(data[0], data[1])
 
+    def clearPoints(self):
+        self.blockSignals(True);
+        self.mapEastingSpin.setValue(0)
+        self.mapNorthingSpin.setValue(0)
+        self.localEastingSpin.setValue(0)
+        self.localNorthingSpin.setValue(0)
+        self.blockSignals(False);
+
+    def closeProject(self):
+        self.clearPoints();
+        self.blockSignals(True);
+        self.gridCombo.clear()
+        self.blockSignals(False);
+
 class GridDock(ToolDockWidget):
 
     def __init__(self, parent=None):

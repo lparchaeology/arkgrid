@@ -10,7 +10,7 @@
 name=ARK Grid
 qgisMinimumVersion=2.08
 description=A QGIS plugin to to create and work with local site grids as commonly used in archaeology.
-version=0.1
+version=0.1.1
 author=L ~ P : Archeaology
 email=ark@lparchaeology.com
 
